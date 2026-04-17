@@ -7,6 +7,8 @@
 IndiCrave VIT is a microservices-based food ordering platform built with Express and MongoDB.
 It includes four backend services (Users, Restaurants, Orders, Payments) and a role-aware frontend for customers, restaurant owners, and delivery partners.
 
+<img width="1600" height="848" alt="login" src="https://github.com/user-attachments/assets/da086074-a0d4-46b1-821c-f40c78cd062f" />
+
 ## Key Features
 
 - End-to-end order flow: browse restaurants, add items, place orders, process payment, and track delivery.
