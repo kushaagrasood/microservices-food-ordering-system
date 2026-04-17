@@ -59,8 +59,113 @@ async function apiRequest(url, options = {}) {
     return payload;
 }
 
-function notify(message) {
-    alert(message);
+// ── Toast notification system ──────────────────────────────────────────────
+function notify(message, type = "info") {
+    const container = document.getElementById("toast-container");
+    if (!container) return;
+
+    const isError = /error|fail|invalid|required|not found|cannot|unable|wrong|incorrect/i.test(message);
+    const isSuccess = /success|saved|placed|updated|created|submitted|deleted|applied|cancelled|delivered|password|registered|added/i.test(message);
+    const resolvedType = type !== "info" ? type : isError ? "error" : isSuccess ? "success" : "info";
+
+    const toast = document.createElement("div");
+    toast.className = `toast toast-${resolvedType}`;
+
+    const icons = { success: "✓", error: "✕", info: "ℹ", warning: "⚠" };
+    toast.innerHTML = `
+        <span class="toast-icon">${icons[resolvedType] || icons.info}</span>
+        <span class="toast-message">${escapeHtml(message)}</span>
+        <button class="toast-close" onclick="this.parentElement.remove()">×</button>
+    `;
+
+    container.appendChild(toast);
+
+    // Trigger entrance animation
+    requestAnimationFrame(() => toast.classList.add("toast-visible"));
+
+    // Auto-dismiss after 4s
+    setTimeout(() => {
+        toast.classList.remove("toast-visible");
+        toast.addEventListener("transitionend", () => toast.remove(), { once: true });
+    }, 4000);
+}
+
+// ── Custom prompt / confirm modal ──────────────────────────────────────────
+function showPrompt(options) {
+    return new Promise((resolve) => {
+        const overlay = document.getElementById("prompt-modal-overlay");
+        const title = document.getElementById("prompt-modal-title");
+        const body = document.getElementById("prompt-modal-body");
+        const confirmBtn = document.getElementById("prompt-modal-confirm");
+        const cancelBtn = document.getElementById("prompt-modal-cancel");
+
+        title.textContent = options.title || "Confirm";
+        body.innerHTML = "";
+
+        if (options.message) {
+            const p = document.createElement("p");
+            p.className = "muted-note";
+            p.textContent = options.message;
+            body.appendChild(p);
+        }
+
+        let inputEl = null;
+        if (options.inputLabel) {
+            const label = document.createElement("label");
+            label.className = "form-label";
+            label.textContent = options.inputLabel;
+            inputEl = document.createElement("input");
+            inputEl.type = "text";
+            inputEl.value = options.inputDefault || "";
+            inputEl.placeholder = options.inputPlaceholder || "";
+            inputEl.style.marginTop = "0.5rem";
+            body.appendChild(label);
+            body.appendChild(inputEl);
+        }
+
+        let selectEl = null;
+        if (options.selectLabel && options.selectOptions) {
+            const label = document.createElement("label");
+            label.className = "form-label";
+            label.textContent = options.selectLabel;
+            selectEl = document.createElement("select");
+            options.selectOptions.forEach(({ value, label: text }) => {
+                const opt = document.createElement("option");
+                opt.value = value;
+                opt.textContent = text;
+                if (value === options.selectDefault) opt.selected = true;
+                selectEl.appendChild(opt);
+            });
+            selectEl.style.marginTop = "0.5rem";
+            body.appendChild(label);
+            body.appendChild(selectEl);
+        }
+
+        confirmBtn.textContent = options.confirmLabel || "Confirm";
+        confirmBtn.className = `compact-btn ${options.danger ? "btn-danger" : ""}`;
+        cancelBtn.textContent = options.cancelLabel || "Cancel";
+
+        overlay.classList.remove("hidden");
+        if (inputEl) setTimeout(() => inputEl.focus(), 50);
+
+        function cleanup() {
+            overlay.classList.add("hidden");
+            confirmBtn.onclick = null;
+            cancelBtn.onclick = null;
+        }
+
+        confirmBtn.onclick = () => {
+            cleanup();
+            if (inputEl) resolve(inputEl.value.trim());
+            else if (selectEl) resolve(selectEl.value);
+            else resolve(true);
+        };
+
+        cancelBtn.onclick = () => {
+            cleanup();
+            resolve(null);
+        };
+    });
 }
 
 function showView(viewId) {
@@ -213,6 +318,7 @@ async function handleRegister() {
     const email = document.getElementById("reg-email").value.trim();
     const phone = document.getElementById("reg-phone").value.trim();
     const password = document.getElementById("reg-password").value;
+    const role_name = document.getElementById("reg-role")?.value || "customer";
 
     if (!full_name || !email || !phone || !password) {
         return notify("Name, email, phone, and password are required.");
@@ -221,12 +327,18 @@ async function handleRegister() {
     try {
         await apiRequest(`${USER_API}/users/register`, {
             method: "POST",
-            body: JSON.stringify({ full_name, email, phone, password, role_name: "customer" })
+            body: JSON.stringify({ full_name, email, phone, password, role_name })
         });
-        notify("Registration successful. You can log in now.");
+        const roleLabels = {
+            customer: "Customer",
+            restaurant_owner: "Restaurant Owner",
+            delivery_partner: "Delivery Partner"
+        };
+        notify(`Registered as ${roleLabels[role_name] || role_name}. You can log in now.`);
         ["reg-name", "reg-email", "reg-phone", "reg-password"].forEach((id) => {
             document.getElementById(id).value = "";
         });
+        document.getElementById("reg-role").value = "customer";
     } catch (err) {
         notify(err.message);
     }
@@ -245,13 +357,71 @@ function logout() {
 
 function loadProfile(force = false) {
     if (!currentUser) return;
-    document.getElementById("prof-name").value = currentUser.full_name || "";
-    document.getElementById("prof-phone").value = currentUser.phone || "";
-    document.getElementById("prof-street").value = currentUser.address?.street || "";
-    document.getElementById("prof-city").value = currentUser.address?.city || "";
-    document.getElementById("prof-state").value = currentUser.address?.state || "";
-    document.getElementById("prof-pincode").value = currentUser.address?.pincode || "";
-    document.getElementById("btn-cancel-profile").style.display = force ? "none" : "block";
+    const roleName = currentUser.roleName || getRoleName(currentUser.role_id);
+
+    // Hide all role panels, show correct one
+    document.querySelectorAll(".profile-role-panel").forEach(el => el.classList.add("hidden"));
+
+    const cancelBtn = document.getElementById("btn-cancel-profile");
+    if (cancelBtn) cancelBtn.style.display = force ? "none" : "inline-block";
+
+    if (roleName === "customer") {
+        document.getElementById("profile-section-title").textContent = "Customer Profile";
+        document.getElementById("profile-customer").classList.remove("hidden");
+        document.getElementById("prof-name").value = currentUser.full_name || "";
+        document.getElementById("prof-phone").value = currentUser.phone || "";
+        document.getElementById("prof-street").value = currentUser.address?.street || "";
+        document.getElementById("prof-city").value = currentUser.address?.city || "";
+        document.getElementById("prof-state").value = currentUser.address?.state || "";
+        document.getElementById("prof-pincode").value = currentUser.address?.pincode || "";
+        document.getElementById("prof-dob").value = currentUser.date_of_birth ? currentUser.date_of_birth.slice(0, 10) : "";
+        document.getElementById("prof-gender").value = currentUser.gender || "";
+        document.getElementById("prof-diet").value = currentUser.dietary_preference || "";
+        document.getElementById("prof-allergies").value = (currentUser.allergies || []).join(", ");
+        document.getElementById("prof-fav-cuisines").value = (currentUser.favourite_cuisines || []).join(", ");
+        document.getElementById("prof-spice").value = currentUser.preferred_spice_level || "";
+        document.getElementById("prof-default-payment").value = currentUser.default_payment_method || "UPI";
+
+    } else if (roleName === "restaurant_owner") {
+        document.getElementById("profile-section-title").textContent = "Owner Profile";
+        document.getElementById("profile-owner").classList.remove("hidden");
+        document.getElementById("owner-prof-name").value = currentUser.full_name || "";
+        document.getElementById("owner-prof-phone").value = currentUser.phone || "";
+        document.getElementById("owner-prof-alt-phone").value = currentUser.alternate_phone || "";
+        document.getElementById("owner-prof-street").value = currentUser.address?.street || "";
+        document.getElementById("owner-prof-city").value = currentUser.address?.city || "";
+        document.getElementById("owner-prof-state").value = currentUser.address?.state || "";
+        document.getElementById("owner-prof-pincode").value = currentUser.address?.pincode || "";
+        document.getElementById("owner-prof-gstin").value = currentUser.gstin || "";
+        document.getElementById("owner-prof-pan").value = currentUser.pan_number || "";
+        document.getElementById("owner-prof-fssai").value = currentUser.fssai_license || "";
+        document.getElementById("owner-prof-bank-name").value = currentUser.bank_details?.bank_name || "";
+        document.getElementById("owner-prof-account").value = currentUser.bank_details?.account_number || "";
+        document.getElementById("owner-prof-ifsc").value = currentUser.bank_details?.ifsc_code || "";
+
+    } else if (roleName === "delivery_partner") {
+        document.getElementById("profile-section-title").textContent = "Delivery Partner Profile";
+        document.getElementById("profile-delivery").classList.remove("hidden");
+        document.getElementById("del-prof-name").value = currentUser.full_name || "";
+        document.getElementById("del-prof-phone").value = currentUser.phone || "";
+        document.getElementById("del-prof-alt-phone").value = currentUser.emergency_contact || "";
+        document.getElementById("del-prof-street").value = currentUser.address?.street || "";
+        document.getElementById("del-prof-city").value = currentUser.address?.city || "";
+        document.getElementById("del-prof-state").value = currentUser.address?.state || "";
+        document.getElementById("del-prof-pincode").value = currentUser.address?.pincode || "";
+        document.getElementById("del-prof-dob").value = currentUser.date_of_birth ? currentUser.date_of_birth.slice(0, 10) : "";
+        document.getElementById("del-prof-vehicle").value = currentUser.vehicle_type || "motorcycle";
+        document.getElementById("del-prof-vehicle-number").value = currentUser.vehicle_number || "";
+        document.getElementById("del-prof-license").value = currentUser.driving_license || "";
+        document.getElementById("del-prof-zone").value = currentUser.preferred_zone || "";
+        document.getElementById("del-prof-available").value = currentUser.is_available !== false ? "true" : "false";
+        document.getElementById("del-prof-radius").value = currentUser.max_delivery_radius || "";
+        document.getElementById("del-prof-bank-name").value = currentUser.bank_details?.bank_name || "";
+        document.getElementById("del-prof-account").value = currentUser.bank_details?.account_number || "";
+        document.getElementById("del-prof-ifsc").value = currentUser.bank_details?.ifsc_code || "";
+        document.getElementById("del-prof-upi").value = currentUser.upi_id || "";
+    }
+
     showView("profile-section");
 }
 
@@ -263,6 +433,13 @@ async function saveProfile() {
     const city = document.getElementById("prof-city").value.trim();
     const state = document.getElementById("prof-state").value.trim();
     const pincode = document.getElementById("prof-pincode").value.trim();
+    const gender = document.getElementById("prof-gender").value;
+    const date_of_birth = document.getElementById("prof-dob").value || null;
+    const dietary_preference = document.getElementById("prof-diet").value;
+    const allergies = document.getElementById("prof-allergies").value.split(",").map(s => s.trim()).filter(Boolean);
+    const favourite_cuisines = document.getElementById("prof-fav-cuisines").value.split(",").map(s => s.trim()).filter(Boolean);
+    const preferred_spice_level = document.getElementById("prof-spice").value.trim();
+    const default_payment_method = document.getElementById("prof-default-payment").value;
 
     if (!full_name || !phone || !street || !city) {
         return notify("Name, phone, street, and city are required.");
@@ -271,7 +448,13 @@ async function saveProfile() {
     try {
         const payload = await apiRequest(`${USER_API}/users/${currentUser._id}`, {
             method: "PUT",
-            body: JSON.stringify({ full_name, phone, address: { street, city, state, pincode } })
+            body: JSON.stringify({
+                full_name, phone,
+                address: { street, city, state, pincode },
+                gender, date_of_birth,
+                dietary_preference, allergies, favourite_cuisines,
+                preferred_spice_level, default_payment_method
+            })
         });
         currentUser = { ...payload.data, roleName: currentUser.roleName || getRoleName(payload.data.role_id) };
         persistCurrentUser();
@@ -283,13 +466,94 @@ async function saveProfile() {
     }
 }
 
+async function saveOwnerProfile() {
+    if (!currentUser) return;
+    const full_name = document.getElementById("owner-prof-name").value.trim();
+    const phone = document.getElementById("owner-prof-phone").value.trim();
+    const alternate_phone = document.getElementById("owner-prof-alt-phone").value.trim();
+    const street = document.getElementById("owner-prof-street").value.trim();
+    const city = document.getElementById("owner-prof-city").value.trim();
+    const state = document.getElementById("owner-prof-state").value.trim();
+    const pincode = document.getElementById("owner-prof-pincode").value.trim();
+    const gstin = document.getElementById("owner-prof-gstin").value.trim();
+    const pan_number = document.getElementById("owner-prof-pan").value.trim();
+    const fssai_license = document.getElementById("owner-prof-fssai").value.trim();
+    const bank_name = document.getElementById("owner-prof-bank-name").value.trim();
+    const account_number = document.getElementById("owner-prof-account").value.trim();
+    const ifsc_code = document.getElementById("owner-prof-ifsc").value.trim();
+
+    if (!full_name || !phone) return notify("Name and phone are required.");
+
+    try {
+        const payload = await apiRequest(`${USER_API}/users/${currentUser._id}`, {
+            method: "PUT",
+            body: JSON.stringify({
+                full_name, phone, alternate_phone,
+                address: { street, city, state, pincode },
+                gstin, pan_number, fssai_license,
+                bank_details: { bank_name, account_number, ifsc_code }
+            })
+        });
+        currentUser = { ...payload.data, roleName: currentUser.roleName || getRoleName(payload.data.role_id) };
+        persistCurrentUser();
+        updateNav();
+        notify("Owner profile saved.");
+        routeUserByRole();
+    } catch (err) {
+        notify(err.message);
+    }
+}
+
+async function saveDeliveryProfile() {
+    if (!currentUser) return;
+    const full_name = document.getElementById("del-prof-name").value.trim();
+    const phone = document.getElementById("del-prof-phone").value.trim();
+    const emergency_contact = document.getElementById("del-prof-alt-phone").value.trim();
+    const street = document.getElementById("del-prof-street").value.trim();
+    const city = document.getElementById("del-prof-city").value.trim();
+    const state = document.getElementById("del-prof-state").value.trim();
+    const pincode = document.getElementById("del-prof-pincode").value.trim();
+    const date_of_birth = document.getElementById("del-prof-dob").value || null;
+    const vehicle_type = document.getElementById("del-prof-vehicle").value;
+    const vehicle_number = document.getElementById("del-prof-vehicle-number").value.trim();
+    const driving_license = document.getElementById("del-prof-license").value.trim();
+    const preferred_zone = document.getElementById("del-prof-zone").value.trim();
+    const is_available = document.getElementById("del-prof-available").value === "true";
+    const max_delivery_radius = parseInt(document.getElementById("del-prof-radius").value, 10) || null;
+    const bank_name = document.getElementById("del-prof-bank-name").value.trim();
+    const account_number = document.getElementById("del-prof-account").value.trim();
+    const ifsc_code = document.getElementById("del-prof-ifsc").value.trim();
+    const upi_id = document.getElementById("del-prof-upi").value.trim();
+
+    if (!full_name || !phone) return notify("Name and phone are required.");
+
+    try {
+        const payload = await apiRequest(`${USER_API}/users/${currentUser._id}`, {
+            method: "PUT",
+            body: JSON.stringify({
+                full_name, phone, emergency_contact,
+                address: { street, city, state, pincode },
+                date_of_birth, vehicle_type, vehicle_number,
+                driving_license, preferred_zone, is_available,
+                max_delivery_radius, upi_id,
+                bank_details: { bank_name, account_number, ifsc_code }
+            })
+        });
+        currentUser = { ...payload.data, roleName: currentUser.roleName || getRoleName(payload.data.role_id) };
+        persistCurrentUser();
+        updateNav();
+        notify("Delivery profile saved.");
+        routeUserByRole();
+    } catch (err) {
+        notify(err.message);
+    }
+}
+
 async function changePassword() {
     if (!currentUser) return;
     const currentPassword = document.getElementById("pwd-current").value;
     const newPassword = document.getElementById("pwd-new").value;
-
     if (!currentPassword || !newPassword) return notify("Both password fields are required.");
-
     try {
         await apiRequest(`${USER_API}/users/${currentUser._id}/password`, {
             method: "PUT",
@@ -297,6 +561,42 @@ async function changePassword() {
         });
         document.getElementById("pwd-current").value = "";
         document.getElementById("pwd-new").value = "";
+        notify("Password updated.");
+    } catch (err) {
+        notify(err.message);
+    }
+}
+
+async function changeOwnerPassword() {
+    if (!currentUser) return;
+    const currentPassword = document.getElementById("owner-pwd-current").value;
+    const newPassword = document.getElementById("owner-pwd-new").value;
+    if (!currentPassword || !newPassword) return notify("Both password fields are required.");
+    try {
+        await apiRequest(`${USER_API}/users/${currentUser._id}/password`, {
+            method: "PUT",
+            body: JSON.stringify({ currentPassword, newPassword })
+        });
+        document.getElementById("owner-pwd-current").value = "";
+        document.getElementById("owner-pwd-new").value = "";
+        notify("Password updated.");
+    } catch (err) {
+        notify(err.message);
+    }
+}
+
+async function changeDeliveryPassword() {
+    if (!currentUser) return;
+    const currentPassword = document.getElementById("del-pwd-current").value;
+    const newPassword = document.getElementById("del-pwd-new").value;
+    if (!currentPassword || !newPassword) return notify("Both password fields are required.");
+    try {
+        await apiRequest(`${USER_API}/users/${currentUser._id}/password`, {
+            method: "PUT",
+            body: JSON.stringify({ currentPassword, newPassword })
+        });
+        document.getElementById("del-pwd-current").value = "";
+        document.getElementById("del-pwd-new").value = "";
         notify("Password updated.");
     } catch (err) {
         notify(err.message);
@@ -328,6 +628,7 @@ async function loadRestaurants() {
         ]);
 
         const restaurants = restaurantsPayload.data || [];
+        console.log("Restaurants:", restaurants);
         const orderStats = orderStatsPayload.data || {};
         const paymentStats = paymentStatsPayload.data || {};
 
@@ -585,79 +886,85 @@ async function processCheckout() {
     }
 
     const totals = calculateCartTotals();
-    if (!cart.length) return notify("Add items to the cart first.");
-    if (totals.belowMinimum) return notify(`Minimum order is ${formatCurrency(totals.minimumOrder)}.`);
+
+    if (!cart.length) {
+        return notify("Add items to the cart first.");
+    }
+
+    if (totals.belowMinimum) {
+        return notify(`Minimum order is ${formatCurrency(totals.minimumOrder)}.`);
+    }
 
     const checkoutBtn = document.getElementById("checkout-btn");
     const payment_method = document.getElementById("payment-method").value;
     const payment_gateway = document.getElementById("payment-gateway").value;
-    const special_instructions = document.getElementById("order-note").value.trim();
 
     try {
         checkoutBtn.disabled = true;
         checkoutBtn.textContent = "Processing...";
 
+        // Step 1: Create the order
         const orderPayload = await apiRequest(`${ORDER_API}/orders`, {
             method: "POST",
             body: JSON.stringify({
                 user_id: currentUser._id,
                 restaurant_id: currentRestaurant._id,
-                delivery_address: currentUser.address,
-                total_amount: totals.subtotal.toFixed(2),
-                discount_amount: totals.discountAmount.toFixed(2),
-                delivery_fee: totals.deliveryFee.toFixed(2),
-                tax_amount: totals.taxAmount.toFixed(2),
-                special_instructions
+                delivery_address: {
+                    street: currentUser.address.street,
+                    city: currentUser.address.city,
+                    state: currentUser.address.state || "",
+                    pincode: currentUser.address.pincode || ""
+                },
+                total_amount: totals.subtotal,
+                discount_amount: totals.discountAmount,
+                delivery_fee: totals.deliveryFee,
+                tax_amount: totals.taxAmount,
+                special_instructions: document.getElementById("order-note")?.value?.trim() || null
             })
         });
 
-        const order = orderPayload.data;
+        const orderId = orderPayload.data._id;
 
+        // Step 2: Save order items
         await apiRequest(`${ORDER_API}/order_items/batch`, {
             method: "POST",
             body: JSON.stringify({
-                items: cart.map((item) => ({
-                    order_id: order._id,
+                items: cart.map(item => ({
+                    order_id: orderId,
                     menu_id: item._id,
                     item_name: item.item_name,
                     quantity: item.quantity,
-                    price_at_order: item.price.toFixed(2),
+                    price_at_order: item.price,
                     special_instructions: item.special_instructions || null
                 }))
             })
         });
 
-        const paymentPayload = await apiRequest(`${PAYMENT_API}/payments/process`, {
+        // Step 3: Create payment record
+        await apiRequest(`${PAYMENT_API}/payments`, {
             method: "POST",
             body: JSON.stringify({
-                order_id: order._id,
+                order_id: orderId,
                 user_id: currentUser._id,
-                amount: totals.finalAmount.toFixed(2),
-                payment_method,
-                payment_gateway
+                amount: totals.finalAmount,
+                payment_method: payment_method,
+                payment_gateway: payment_gateway,
+                payment_status: "pending"
             })
         });
 
-        const orderStatus = paymentPayload.data.payment_status === "completed" ? "confirmed" : "pending";
-        await apiRequest(`${ORDER_API}/orders/${order._id}`, {
-            method: "PUT",
-            body: JSON.stringify({ status: orderStatus })
-        });
-
-        document.getElementById("success-message").textContent =
-            paymentPayload.data.payment_status === "completed"
-                ? `Payment successful via ${payment_method}. Order ${order._id.slice(-6)} is confirmed.`
-                : `Payment failed for order ${order._id.slice(-6)}. Retry from My Orders.`;
-
+        // Step 4: Clear cart and redirect
         cart = [];
         appliedPromo = null;
-        showView("success-section");
+        updateCartUI();
+        notify("Order placed successfully! 🎉");
+        loadMyOrders();
+
     } catch (err) {
         notify(err.message);
     } finally {
         checkoutBtn.disabled = false;
         checkoutBtn.textContent = "Place Order";
-        updateCartUI();
     }
 }
 
@@ -762,7 +1069,16 @@ async function fetchPaymentForOrder(orderId) {
 }
 
 async function cancelOrder(orderId) {
-    const reason = prompt("Cancellation reason:", "Changed my mind");
+    const reason = await showPrompt({
+        title: "Cancel Order",
+        message: "Are you sure you want to cancel this order?",
+        inputLabel: "Reason for cancellation",
+        inputDefault: "Changed my mind",
+        inputPlaceholder: "Enter reason…",
+        confirmLabel: "Cancel Order",
+        cancelLabel: "Keep Order",
+        danger: true
+    });
     if (reason === null) return;
 
     try {
@@ -793,7 +1109,22 @@ async function retryPayment(orderId) {
             fetchPaymentForOrder(orderId)
         ]);
 
-        const payment_method = prompt("Payment method for retry (UPI, wallet, COD, credit_card, debit_card, net_banking):", existingPayment?.payment_method || "UPI");
+        const payment_method = await showPrompt({
+            title: "Retry Payment",
+            message: "Choose a payment method to retry:",
+            selectLabel: "Payment Method",
+            selectOptions: [
+                { value: "UPI", label: "UPI" },
+                { value: "wallet", label: "Wallet" },
+                { value: "COD", label: "Cash on Delivery" },
+                { value: "credit_card", label: "Credit Card" },
+                { value: "debit_card", label: "Debit Card" },
+                { value: "net_banking", label: "Net Banking" }
+            ],
+            selectDefault: existingPayment?.payment_method || "UPI",
+            confirmLabel: "Retry Payment",
+            cancelLabel: "Cancel"
+        });
         if (!payment_method) return;
 
         const paymentPayload = await apiRequest(`${PAYMENT_API}/payments/process`, {
@@ -1019,7 +1350,7 @@ async function loadOwnerDashboard() {
                                         <td>${formatCurrency(menu.price)}</td>
                                         <td><span class="status-badge status-${menu.is_available ? "delivered" : "cancelled"}">${menu.is_available ? "Available" : "Hidden"}</span></td>
                                         <td class="button-row">
-                                            <button class="compact-btn ghost-btn" onclick="toggleMenuAvailability('${menu._id}', ${menu.is_available ? "false" : "true"})">${menu.is_available ? "Hide" : "Show"}</button>
+                                            <button class="compact-btn ghost-btn" onclick="toggleMenuAvailability('${menu._id}')">${menu.is_available ? "Hide" : "Show"}</button>
                                             <button class="compact-btn btn-danger" onclick="deleteMenuItem('${menu._id}')">Delete</button>
                                         </td>
                                     </tr>
@@ -1032,6 +1363,7 @@ async function loadOwnerDashboard() {
         `;
 
         await renderOwnerOrders(myRestaurants);
+        await loadRestaurantReviews(selectedOwnerRestaurantId);
         showView("owner-section");
     } catch (err) {
         notify(err.message);
@@ -1148,11 +1480,10 @@ async function createMenuItem() {
     }
 }
 
-async function toggleMenuAvailability(menuId, nextAvailability) {
+async function toggleMenuAvailability(menuId) {
     try {
-        await apiRequest(`${RESTAURANT_API}/menus/${menuId}`, {
-            method: "PUT",
-            body: JSON.stringify({ is_available: nextAvailability === "true" })
+        await apiRequest(`${RESTAURANT_API}/menus/${menuId}/toggle`, {
+            method: "PATCH"
         });
         loadOwnerDashboard();
     } catch (err) {
@@ -1267,4 +1598,83 @@ async function markDelivered(orderId) {
     } catch (err) {
         notify(err.message);
     }
+}
+
+// WITH THIS:
+async function loadRestaurantReviews(restaurantId) {
+    const container = document.getElementById("reviews-list");
+    if (!container) return;
+
+    try {
+        const [reviewsPayload, usersPayload] = await Promise.all([
+            apiRequest(`${RESTAURANT_API}/reviews?restaurant_id=${restaurantId}`),
+            apiRequest(`${USER_API}/users`)
+        ]);
+
+        const reviews = reviewsPayload.data || [];
+
+        if (!reviews.length) {
+            container.innerHTML = `<p class="muted-note">No reviews yet for this restaurant.</p>`;
+            return;
+        }
+
+        const users = usersPayload.data || [];
+
+        const avgRating = (reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length).toFixed(1);
+        const starCounts = [5, 4, 3, 2, 1].map(star => ({
+            star,
+            count: reviews.filter(r => r.rating === star).length
+        }));
+
+        container.innerHTML = `
+            <div class="reviews-summary">
+                <div class="reviews-score">
+                    <span class="reviews-big-score">${avgRating}</span>
+                    <div class="reviews-stars">${renderStars(parseFloat(avgRating))}</div>
+                    <span class="reviews-count">${reviews.length} review${reviews.length !== 1 ? "s" : ""}</span>
+                </div>
+                <div class="reviews-bars">
+                    ${starCounts.map(({ star, count }) => `
+                        <div class="bar-row">
+                            <span class="bar-label">${star}★</span>
+                            <div class="bar-track">
+                                <div class="bar-fill" style="width: ${reviews.length ? Math.round((count / reviews.length) * 100) : 0}%"></div>
+                            </div>
+                            <span class="bar-count">${count}</span>
+                        </div>
+                    `).join("")}
+                </div>
+            </div>
+            <div class="reviews-cards">
+                ${reviews.sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0)).map(review => {
+                    const user = users.find(u => u._id === review.user_id);
+                    const initials = (user?.full_name || "?").split(" ").map(n => n[0]).join("").slice(0, 2).toUpperCase();
+                    return `
+                        <div class="review-card">
+                            <div class="review-header">
+                                <div class="review-avatar">${escapeHtml(initials)}</div>
+                                <div class="review-meta">
+                                    <span class="review-name">${escapeHtml(user?.full_name || "Customer")}</span>
+                                    <span class="review-date">${review.created_at ? new Date(review.created_at).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" }) : "Recently"}</span>
+                                </div>
+                                <div class="review-stars-inline">${renderStars(review.rating)}</div>
+                            </div>
+                            ${review.comment ? `<p class="review-comment">${escapeHtml(review.comment)}</p>` : `<p class="review-comment muted-note">No comment left.</p>`}
+                        </div>
+                    `;
+                }).join("")}
+            </div>
+        `;
+    } catch (err) {
+        const container = document.getElementById("reviews-list");
+        if (container) container.innerHTML = `<p class="muted-note">Could not load reviews.</p>`;
+    }
+}
+
+function renderStars(rating) {
+    return [1, 2, 3, 4, 5].map(i => {
+        if (rating >= i) return `<span class="star full">★</span>`;
+        if (rating >= i - 0.5) return `<span class="star half">★</span>`;
+        return `<span class="star empty">☆</span>`;
+    }).join("");
 }

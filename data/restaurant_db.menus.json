@@ -1,0 +1,178 @@
+[{
+  "_id": {
+    "$oid": "69df40963b9fd922b0c65e88"
+  },
+  "restaurant_id": {
+    "$oid": "69df3f8d3b9fd922b0c65e86"
+  },
+  "item_name": "Margherita Pizza",
+  "description": "Classic cheese pizza",
+  "price": {
+    "$numberDecimal": "200"
+  },
+  "category": "main_course",
+  "is_available": true,
+  "is_vegetarian": true,
+  "spice_level": "mild",
+  "preparation_time": 15
+},
+{
+  "_id": {
+    "$oid": "69df40963b9fd922b0c65e89"
+  },
+  "restaurant_id": {
+    "$oid": "69df3f8d3b9fd922b0c65e86"
+  },
+  "item_name": "Garlic Bread",
+  "description": "Crispy garlic bread",
+  "price": {
+    "$numberDecimal": "100"
+  },
+  "category": "appetizer",
+  "is_available": true,
+  "is_vegetarian": true
+},
+{
+  "_id": {
+    "$oid": "69df40963b9fd922b0c65e8a"
+  },
+  "restaurant_id": {
+    "$oid": "69df3f8d3b9fd922b0c65e86"
+  },
+  "item_name": "Chicken Biryani",
+  "description": "Spicy dum biryani",
+  "price": {
+    "$numberDecimal": "250"
+  },
+  "category": "main_course",
+  "is_available": true,
+  "is_vegetarian": false,
+  "spice_level": "hot"
+},
+{
+  "_id": {
+    "$oid": "69df40963b9fd922b0c65e8b"
+  },
+  "restaurant_id": {
+    "$oid": "69df3f8d3b9fd922b0c65e86"
+  },
+  "item_name": "Paneer Tikka",
+  "description": "Grilled paneer",
+  "price": {
+    "$numberDecimal": "180"
+  },
+  "category": "appetizer",
+  "is_available": true,
+  "is_vegetarian": true
+},
+{
+  "_id": {
+    "$oid": "69df40963b9fd922b0c65e8c"
+  },
+  "restaurant_id": {
+    "$oid": "69df3f8d3b9fd922b0c65e86"
+  },
+  "item_name": "Burger",
+  "description": "Juicy chicken burger",
+  "price": {
+    "$numberDecimal": "150"
+  },
+  "category": "main_course",
+  "is_available": true,
+  "is_vegetarian": false
+},
+{
+  "_id": {
+    "$oid": "69df40963b9fd922b0c65e8e"
+  },
+  "restaurant_id": {
+    "$oid": "69df3f8d3b9fd922b0c65e87"
+  },
+  "item_name": "Sushi Roll",
+  "description": "Fresh sushi",
+  "price": {
+    "$numberDecimal": "300"
+  },
+  "category": "main_course",
+  "is_available": true
+},
+{
+  "_id": {
+    "$oid": "69df40963b9fd922b0c65e8f"
+  },
+  "restaurant_id": {
+    "$oid": "69df3f8d3b9fd922b0c65e87"
+  },
+  "item_name": "Miso Soup",
+  "description": "Traditional soup",
+  "price": {
+    "$numberDecimal": "120"
+  },
+  "category": "appetizer",
+  "is_available": true,
+  "is_vegan": false,
+  "is_vegetarian": false,
+  "preparation_time": 15,
+  "rating": 0,
+  "spice_level": "medium",
+  "total_orders": 0
+},
+{
+  "_id": {
+    "$oid": "69df40963b9fd922b0c65e90"
+  },
+  "restaurant_id": {
+    "$oid": "69df3f8d3b9fd922b0c65e87"
+  },
+  "item_name": "Cold Coffee",
+  "description": "Chilled coffee",
+  "price": {
+    "$numberDecimal": "90"
+  },
+  "category": "beverage",
+  "is_available": true,
+  "is_vegan": false,
+  "is_vegetarian": false,
+  "preparation_time": 15,
+  "rating": 0,
+  "spice_level": "medium",
+  "total_orders": 0
+},
+{
+  "_id": {
+    "$oid": "69df40963b9fd922b0c65e91"
+  },
+  "restaurant_id": {
+    "$oid": "69df3f8d3b9fd922b0c65e87"
+  },
+  "item_name": "Veg Sandwich",
+  "description": "Fresh sandwich",
+  "price": {
+    "$numberDecimal": "130"
+  },
+  "category": "main_course",
+  "is_available": true,
+  "is_vegetarian": true
+},
+{
+  "_id": {
+    "$oid": "69df5f587ef5430169a602f2"
+  },
+  "restaurant_id": {
+    "$oid": "69df3f8d3b9fd922b0c65e87"
+  },
+  "item_name": "Veg Kebab",
+  "description": "Khake to dekho",
+  "price": {
+    "$numberDecimal": "699"
+  },
+  "category": "main_course",
+  "is_available": true,
+  "is_vegetarian": true,
+  "is_vegan": false,
+  "spice_level": "hot",
+  "preparation_time": 45,
+  "rating": 0,
+  "total_orders": 0,
+  "__v": 0
+}]

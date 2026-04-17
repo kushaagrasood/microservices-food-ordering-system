@@ -1,0 +1,35 @@
+[{
+  "_id": {
+    "$oid": "69df3f8d3b9fd922b0c65e86"
+  },
+  "restaurant_name": "Pizza Hub",
+  "owner_id": {
+    "$oid": "69df3f8d3b9fd922b0c65e84"
+  },
+  "cuisine_type": "Italian",
+  "address": {
+    "city": "Chennai"
+  },
+  "rating": 4.5,
+  "is_open": true
+},
+{
+  "_id": {
+    "$oid": "69df3f8d3b9fd922b0c65e87"
+  },
+  "restaurant_name": "Spice Villa",
+  "owner_id": {
+    "$oid": "69df3bdd3b9fd922b0c65e82"
+  },
+  "cuisine_type": "Indian",
+  "address": {
+    "city": "Chennai"
+  },
+  "rating": 4.5,
+  "is_open": true,
+  "delivery_time": 30,
+  "minimum_order": {
+    "$numberDecimal": "100"
+  },
+  "opening_hours": ""
+}]

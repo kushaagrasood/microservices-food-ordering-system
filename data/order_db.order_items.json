@@ -1,0 +1,175 @@
+[{
+  "_id": "oi1",
+  "order_id": "o1",
+  "menu_id": "m1",
+  "quantity": 1,
+  "price_at_order": 200
+},
+{
+  "_id": "oi2",
+  "order_id": "o2",
+  "menu_id": "m3",
+  "quantity": 1,
+  "price_at_order": 250
+},
+{
+  "_id": "oi3",
+  "order_id": "o3",
+  "menu_id": "m5",
+  "quantity": 1,
+  "price_at_order": 150
+},
+{
+  "_id": "oi4",
+  "order_id": "o4",
+  "menu_id": "m7",
+  "quantity": 1,
+  "price_at_order": 300
+},
+{
+  "_id": "oi5",
+  "order_id": "o5",
+  "menu_id": "m9",
+  "quantity": 1,
+  "price_at_order": 90
+},
+{
+  "_id": "oi6",
+  "order_id": "o6",
+  "menu_id": "m4",
+  "quantity": 2,
+  "price_at_order": 180
+},
+{
+  "_id": "oi7",
+  "order_id": "o7",
+  "menu_id": "m6",
+  "quantity": 1,
+  "price_at_order": 80
+},
+{
+  "_id": "oi8",
+  "order_id": "o8",
+  "menu_id": "m8",
+  "quantity": 2,
+  "price_at_order": 120
+},
+{
+  "_id": "oi9",
+  "order_id": "o9",
+  "menu_id": "m10",
+  "quantity": 1,
+  "price_at_order": 130
+},
+{
+  "_id": "oi10",
+  "order_id": "o10",
+  "menu_id": "m2",
+  "quantity": 2,
+  "price_at_order": 100
+},
+{
+  "_id": {
+    "$oid": "69df512b30c4a16d01f0e5b9"
+  },
+  "order_id": {
+    "$oid": "69df512b30c4a16d01f0e5b7"
+  },
+  "menu_id": {
+    "$oid": "69df40963b9fd922b0c65e8e"
+  },
+  "item_name": "Sushi Roll",
+  "quantity": 1,
+  "price_at_order": {
+    "$numberDecimal": "300.00"
+  },
+  "subtotal": {
+    "$numberDecimal": "300.00"
+  },
+  "special_instructions": null,
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "69df513030c4a16d01f0e5bd"
+  },
+  "order_id": {
+    "$oid": "69df513030c4a16d01f0e5bb"
+  },
+  "menu_id": {
+    "$oid": "69df40963b9fd922b0c65e8e"
+  },
+  "item_name": "Sushi Roll",
+  "quantity": 1,
+  "price_at_order": {
+    "$numberDecimal": "300.00"
+  },
+  "subtotal": {
+    "$numberDecimal": "300.00"
+  },
+  "special_instructions": null,
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "69df517330c4a16d01f0e5d4"
+  },
+  "order_id": {
+    "$oid": "69df517330c4a16d01f0e5d2"
+  },
+  "menu_id": {
+    "$oid": "69df40963b9fd922b0c65e8d"
+  },
+  "item_name": "French Fries",
+  "quantity": 1,
+  "price_at_order": {
+    "$numberDecimal": "80.00"
+  },
+  "subtotal": {
+    "$numberDecimal": "80.00"
+  },
+  "special_instructions": "Please send ketchup",
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "69df6320a4b00aca298f1fe8"
+  },
+  "order_id": {
+    "$oid": "69df6320a4b00aca298f1fe6"
+  },
+  "menu_id": {
+    "$oid": "69df5f587ef5430169a602f2"
+  },
+  "item_name": "Veg Kebab",
+  "quantity": 1,
+  "price_at_order": {
+    "$numberDecimal": "699.00"
+  },
+  "subtotal": {
+    "$numberDecimal": "699.00"
+  },
+  "special_instructions": null,
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "69df64e4896cd53f5c60d2e1"
+  },
+  "order_id": {
+    "$oid": "69df64e4896cd53f5c60d2df"
+  },
+  "menu_id": {
+    "$oid": "69df5f587ef5430169a602f2"
+  },
+  "item_name": "Veg Kebab",
+  "quantity": 1,
+  "price_at_order": {
+    "$numberDecimal": "699.00"
+  },
+  "subtotal": {
+    "$numberDecimal": "699.00"
+  },
+  "special_instructions": "Please send curd",
+  "__v": 0
+}]

@@ -137,7 +137,18 @@ app.get("/", (req, res) => {
 // CREATE ORDER (Enhanced)
 app.post("/orders", async (req, res) => {
     try {
-        const { total_amount, discount_amount = 0, delivery_fee = 0, tax_amount = 0, ...rest } = req.body;
+        const {
+    user_id,
+    restaurant_id,
+    delivery_address,
+    special_instructions,
+    total_amount,
+    discount_amount = 0,
+    delivery_fee = 0,
+    tax_amount = 0
+} = req.body;
+
+console.log("📦 Received address:", delivery_address);
         
         // Calculate final amount
         const total = parseFloat(total_amount);
@@ -146,14 +157,35 @@ app.post("/orders", async (req, res) => {
         const tax = parseFloat(tax_amount);
         const final = total - discount + delivery + tax;
 
+        console.log("RAW BODY:", req.body);
+        console.log("ADDRESS:", req.body.delivery_address);
+
+if (!delivery_address) {
+    return res.status(400).json({
+        success: false,
+        error: "Address missing at backend"
+    });
+}
+
         const orderData = {
-            ...rest,
-            total_amount: mongoose.Types.Decimal128.fromString(total.toFixed(2)),
-            discount_amount: mongoose.Types.Decimal128.fromString(discount.toFixed(2)),
-            delivery_fee: mongoose.Types.Decimal128.fromString(delivery.toFixed(2)),
-            tax_amount: mongoose.Types.Decimal128.fromString(tax.toFixed(2)),
-            final_amount: mongoose.Types.Decimal128.fromString(final.toFixed(2))
-        };
+        user_id,
+        restaurant_id,
+
+        delivery_address: {
+            street: String(delivery_address?.street || ""),
+            city: String(delivery_address?.city || ""),
+            state: delivery_address?.state || "",
+            pincode: delivery_address?.pincode || ""
+        },
+
+        special_instructions: special_instructions || null,
+
+        total_amount: mongoose.Types.Decimal128.fromString(total.toFixed(2)),
+        discount_amount: mongoose.Types.Decimal128.fromString(discount.toFixed(2)),
+        delivery_fee: mongoose.Types.Decimal128.fromString(delivery.toFixed(2)),
+        tax_amount: mongoose.Types.Decimal128.fromString(tax.toFixed(2)),
+        final_amount: mongoose.Types.Decimal128.fromString(final.toFixed(2))
+};
 
         const newOrder = new Order(orderData);
         await newOrder.save();

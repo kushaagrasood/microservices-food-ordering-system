@@ -37,8 +37,38 @@ const userSchema = new mongoose.Schema({
     },
     created_at: { type: Date, default: Date.now },
     is_active: { type: Boolean, default: true },
-    last_login: { type: Date }
-});
+    last_login: { type: Date },
+
+    // ── Customer fields ──────────────────────────────────────
+    gender: { type: String, enum: ["male", "female", "other", ""] },
+    date_of_birth: { type: Date },
+    dietary_preference: { type: String, enum: ["vegetarian", "vegan", "non_vegetarian", ""] },
+    allergies: [{ type: String }],
+    favourite_cuisines: [{ type: String }],
+    preferred_spice_level: { type: String },
+    default_payment_method: { type: String },
+
+    // ── Restaurant Owner fields ───────────────────────────────
+    alternate_phone: { type: String },
+    gstin: { type: String },
+    pan_number: { type: String },
+    fssai_license: { type: String },
+    bank_details: {
+        bank_name: String,
+        account_number: String,
+        ifsc_code: String
+    },
+
+    // ── Delivery Partner fields ───────────────────────────────
+    emergency_contact: { type: String },
+    vehicle_type: { type: String, enum: ["bicycle", "motorcycle", "scooter", "car", "electric_scooter", ""] },
+    vehicle_number: { type: String },
+    driving_license: { type: String },
+    preferred_zone: { type: String },
+    is_available: { type: Boolean, default: true },
+    max_delivery_radius: { type: Number },
+    upi_id: { type: String }
+}, { strict: false });
 
 const User = mongoose.model("User", userSchema);
 
@@ -87,6 +117,15 @@ app.post("/users/register", async (req, res) => {
             });
         }
 
+        // Only allow known roles to be self-registered
+        const ALLOWED_ROLES = ["customer", "restaurant_owner", "delivery_partner"];
+        if (!ALLOWED_ROLES.includes(role_name)) {
+            return res.status(400).json({
+                success: false,
+                error: `Invalid role '${role_name}'. Allowed roles: ${ALLOWED_ROLES.join(", ")}`
+            });
+        }
+
         // Check if user already exists
         const existingUser = await User.findOne({ email });
         if (existingUser) {
@@ -96,12 +135,12 @@ app.post("/users/register", async (req, res) => {
             });
         }
 
-        // Get role
+        // Get role from DB
         const role = await Role.findOne({ role_name });
         if (!role) {
             return res.status(400).json({ 
                 success: false, 
-                error: `Role '${role_name}' not found` 
+                error: `Role '${role_name}' not found in database. Please seed roles first.` 
             });
         }
 
@@ -119,13 +158,13 @@ app.post("/users/register", async (req, res) => {
 
         await newUser.save();
         
-        // Don't send password hash in response
         const userResponse = newUser.toObject();
         delete userResponse.password_hash;
+        userResponse.roleName = role.role_name;
 
         res.status(201).json({ 
             success: true,
-            message: "User registered successfully", 
+            message: `Registered successfully as ${role_name}`, 
             data: userResponse 
         });
     } catch (error) {

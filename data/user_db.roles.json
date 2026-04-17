@@ -1,0 +1,29 @@
+[{
+  "_id": {
+    "$oid": "69df3bcf3b9fd922b0c65e7e"
+  },
+  "role_name": "customer",
+  "permissions": [
+    "place_order",
+    "view_orders",
+    "write_review"
+  ]
+},
+{
+  "_id": {
+    "$oid": "69df3bcf3b9fd922b0c65e7f"
+  },
+  "role_name": "restaurant_owner",
+  "permissions": [
+    "manage_menu"
+  ]
+},
+{
+  "_id": {
+    "$oid": "69df3bcf3b9fd922b0c65e80"
+  },
+  "role_name": "delivery_partner",
+  "permissions": [
+    "update_delivery_status"
+  ]
+}]

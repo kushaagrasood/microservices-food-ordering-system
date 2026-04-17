@@ -3,89 +3,448 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>IndiCrave</title>
+    <title>IndiCrave — Food Ordering Platform</title>
     <link rel="stylesheet" href="styles.css">
     <link rel="icon" href="assets/logo.svg">
+    <!-- Fonts: Playfair Display (hero/headings) · Syne (brand) · DM Sans (UI) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+    <style>
+        /* ── Font overrides ──────────────────────────────── */
+        h1, h2, h3,
+        .hero-card h1,
+        .hero-card h2 {
+            font-family: 'Playfair Display', Georgia, serif;
+            font-weight: 900;
+            letter-spacing: -0.02em;
+            line-height: 1.12;
+        }
+        h2, h3 { font-weight: 700; }
+
+        .eyebrow, .nav-tagline, label, .form-label,
+        .muted-note, .tag, .hero-pill, button,
+        select, input, textarea, p, .stats-strip {
+            font-family: 'DM Sans', system-ui, sans-serif;
+        }
+
+        /* Navbar brand */
+        .logo {
+            font-family: 'Syne', sans-serif !important;
+            font-weight: 800;
+            letter-spacing: -0.03em;
+            text-shadow: 0 0 22px rgba(200,80,40,0.38), 0 0 48px rgba(200,80,40,0.14);
+        }
+
+        /* Section headings */
+        .section-head h2 {
+            font-family: 'Playfair Display', Georgia, serif;
+            font-weight: 700;
+            letter-spacing: -0.015em;
+            display: inline-block;
+            position: relative;
+        }
+        .section-head h2::after {
+            content: '';
+            position: absolute;
+            left: 0; bottom: -4px;
+            width: 0; height: 2px;
+            background: var(--accent, #c85028);
+            border-radius: 2px;
+            animation: drawLine 0.65s cubic-bezier(.4,0,.2,1) forwards 0.1s;
+        }
+        @keyframes drawLine {
+            to { width: 100%; }
+        }
+
+        /* Hero card italic h1 */
+        .hero-card h1 {
+            font-size: clamp(2rem, 4vw, 3rem);
+            font-style: italic;
+        }
+
+        /* ── Hero card ambient glow ──────────────────────── */
+        .auth-hero {
+            position: relative;
+            overflow: hidden;
+        }
+        .auth-hero::before {
+            content: '';
+            position: absolute;
+            top: -70px; right: -70px;
+            width: 340px; height: 340px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(200,80,40,0.22) 0%, transparent 70%);
+            animation: pulseGlow 4s ease-in-out infinite;
+            pointer-events: none;
+        }
+        .auth-hero::after {
+            content: '';
+            position: absolute;
+            bottom: -50px; left: 28%;
+            width: 220px; height: 220px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(255,165,50,0.14) 0%, transparent 70%);
+            animation: pulseGlow 5.5s ease-in-out infinite reverse;
+            pointer-events: none;
+        }
+        @keyframes pulseGlow {
+            0%, 100% { opacity: 0.65; transform: scale(1); }
+            50%       { opacity: 1;   transform: scale(1.14); }
+        }
+
+        /* ── Eyebrow shimmer sweep ───────────────────────── */
+        .eyebrow {
+            position: relative;
+            overflow: hidden;
+        }
+        .eyebrow::after {
+            content: '';
+            position: absolute;
+            top: 0; left: -100%;
+            width: 55%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.5), transparent);
+            animation: shimmer 3.8s ease-in-out infinite;
+        }
+        @keyframes shimmer {
+            0%   { left: -80%; }
+            55%  { left: 130%; }
+            100% { left: 130%; }
+        }
+
+        /* ── Hero pill float ─────────────────────────────── */
+        .hero-pill { animation: floatPill 3s ease-in-out infinite; }
+        .hero-pill:nth-child(2) { animation-delay: 0.35s; }
+        .hero-pill:nth-child(3) { animation-delay: 0.7s;  }
+        .hero-pill:nth-child(4) { animation-delay: 1.05s; }
+        .hero-pill:nth-child(5) { animation-delay: 1.4s;  }
+        @keyframes floatPill {
+            0%, 100% { transform: translateY(0px); }
+            50%       { transform: translateY(-5px); }
+        }
+
+        /* ── Card entrance fade-up ───────────────────────── */
+        .card {
+            animation: fadeUp 0.45s cubic-bezier(.4,0,.2,1) both;
+        }
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to   { opacity: 1; transform: translateY(0);    }
+        }
+        .auth-grid   .card:nth-child(2),
+        .profile-grid .card:nth-child(2),
+        .grid        .card:nth-child(2) { animation-delay: 0.07s; }
+        .auth-grid   .card:nth-child(3),
+        .profile-grid .card:nth-child(3),
+        .grid        .card:nth-child(3) { animation-delay: 0.14s; }
+        .grid .card:nth-child(4) { animation-delay: 0.20s; }
+        .grid .card:nth-child(5) { animation-delay: 0.26s; }
+        .grid .card:nth-child(6) { animation-delay: 0.32s; }
+
+        /* ── Button glow on hover ────────────────────────── */
+        button:not(.ghost-btn):not(.btn-back):not(.btn-danger):hover {
+            box-shadow: 0 0 0 3px rgba(200,80,40,0.16), 0 6px 22px rgba(200,80,40,0.24);
+            transform: translateY(-1px);
+            transition: box-shadow 0.22s ease, transform 0.15s ease;
+        }
+
+        /* ── Stat value pop-in ───────────────────────────── */
+        .stat-value {
+            animation: popIn 0.4s cubic-bezier(.34,1.56,.64,1) both;
+        }
+        @keyframes popIn {
+            from { opacity: 0; transform: scale(0.65); }
+            to   { opacity: 1; transform: scale(1);    }
+        }
+
+        /* ── Success emoji bounce ────────────────────────── */
+        #success-section [style*="font-size:3.5rem"] {
+            display: inline-block;
+            animation: bounce 0.75s cubic-bezier(.34,1.56,.64,1) both 0.1s;
+        }
+        @keyframes bounce {
+            from { opacity: 0; transform: scale(0.2) rotate(-20deg); }
+            to   { opacity: 1; transform: scale(1) rotate(0deg);     }
+        }
+
+        /* ── Restaurant card hover glow ──────────────────── */
+        #restaurants-grid .card:hover,
+        #menu-grid .card:hover {
+            box-shadow: 0 0 0 2px rgba(200,80,40,0.18), 0 8px 28px rgba(200,80,40,0.13);
+            transform: translateY(-3px);
+            transition: box-shadow 0.2s ease, transform 0.18s ease;
+        }
+    </style>
 </head>
 <body>
+
+    <!-- ── Navbar ── -->
     <nav class="navbar">
         <div>
-            <div class="logo">IndiCrave</div>
+            <div class="hero-pill">⭕IndiCrave Sync</div>
             <p class="nav-tagline">Microservices food ordering platform</p>
         </div>
         <div class="nav-links" id="nav-links"></div>
     </nav>
 
     <main id="app-container">
+
+        <!-- ══ AUTH SECTION ══ -->
         <section id="auth-section" class="view-section active">
+
             <div class="hero-card auth-hero">
                 <div>
-                    <span class="eyebrow">Live Order Flow</span>
-                    <h1>Order, manage, dispatch, and review food in one place.</h1>
-                    <p>Customers can place and track orders, restaurant owners can manage menus and active orders, and delivery partners can claim and complete deliveries.</p>
+                    <h1 class="logo">IndiCrave</h1>
+                    <p>One platform. Orders, kitchens, and deliveries — perfectly in sync</p>
                 </div>
                 <div class="hero-pill-group">
-                    <span class="hero-pill">Users</span>
-                    <span class="hero-pill">Restaurants</span>
-                    <span class="hero-pill">Orders</span>
-                    <span class="hero-pill">Payments</span>
+                    <span class="hero-pill">👤 Customers</span>
+                    <span class="hero-pill">🏪 Restaurants</span>
+                    <span class="hero-pill">📦 Orders</span>
+                    <span class="hero-pill">⭐ Reviews</span>
+                    <span class="hero-pill">🚴 Delivery</span>
                 </div>
             </div>
 
             <div class="auth-grid">
                 <div class="card form-card auth-card">
-                    <h2>Login</h2>
-                    <input type="email" id="login-email" placeholder="Email">
-                    <input type="password" id="login-password" placeholder="Password">
-                    <button onclick="handleLogin()">Login</button>
-                    <p class="muted-note">Use the seeded backend accounts if you already created them in MongoDB.</p>
+                    <span class="eyebrow" style="margin-bottom:1rem">Sign In</span>
+                    <h2 style="margin-bottom:1.25rem">Welcome back</h2>
+                    <label class="form-label" for="login-email">Email</label>
+                    <input type="email" id="login-email" placeholder="you@example.com" autocomplete="email">
+                    <label class="form-label" for="login-password">Password</label>
+                    <input type="password" id="login-password" placeholder="••••••••" autocomplete="current-password">
+                    <button onclick="handleLogin()" style="margin-top:0.5rem">Login →</button>
                 </div>
 
                 <div class="card form-card auth-card">
-                    <h2>Register</h2>
-                    <input type="text" id="reg-name" placeholder="Full Name">
-                    <input type="email" id="reg-email" placeholder="Email">
-                    <input type="text" id="reg-phone" placeholder="Phone Number">
-                    <input type="password" id="reg-password" placeholder="Password">
-                    <button onclick="handleRegister()" class="btn-secondary">Create Account</button>
-                    <p class="muted-note">New signups default to the <b>customer</b> role.</p>
+                    <span class="eyebrow" style="margin-bottom:1rem;background:var(--accent-light);color:#0e5237;border-color:rgba(26,122,87,0.18)">New Account</span>
+                    <h2 style="margin-bottom:1.25rem">Create an account</h2>
+                    <label class="form-label" for="reg-name">Full Name</label>
+                    <input type="text" id="reg-name" placeholder="Arjun Kumar" autocomplete="name">
+                    <label class="form-label" for="reg-email">Email</label>
+                    <input type="email" id="reg-email" placeholder="arjun@example.com" autocomplete="email">
+                    <label class="form-label" for="reg-phone">Phone Number</label>
+                    <input type="text" id="reg-phone" placeholder="+91 98765 43210" autocomplete="tel">
+                    <label class="form-label" for="reg-password">Password</label>
+                    <input type="password" id="reg-password" placeholder="Create a strong password" autocomplete="new-password">
+                    <label class="form-label" for="reg-role" style="margin-top:0.75rem">Register As</label>
+                    <select id="reg-role">
+                        <option value="customer">🛒 Customer — Browse &amp; order food</option>
+                        <option value="restaurant_owner">🍽️ Restaurant Owner — Manage your restaurant</option>
+                        <option value="delivery_partner">🚴 Delivery Partner — Deliver orders</option>
+                    </select>
+                    <button onclick="handleRegister()" class="btn-secondary" style="margin-top:0.5rem">Create Account →</button>
                 </div>
             </div>
         </section>
 
+        <!-- ══ PROFILE SECTION ══ -->
         <section id="profile-section" class="view-section">
             <div class="section-head">
                 <div>
-                    <span class="eyebrow">Profile</span>
-                    <h2>Your Account</h2>
+                    <span class="eyebrow">Account</span>
+                    <h2 id="profile-section-title">Your Profile</h2>
+                </div>
+                <button onclick="routeUserByRole()" class="btn-secondary compact-btn" id="btn-cancel-profile">← Back</button>
+            </div>
+
+            <!-- CUSTOMER PROFILE -->
+            <div id="profile-customer" class="profile-role-panel hidden">
+                <div class="profile-grid">
+                    <div class="card">
+                        <h3>Personal Info &amp; Delivery Address</h3>
+                        <p class="muted-note">This address is used as the default delivery location for all orders.</p>
+                        <label class="form-label" for="prof-name">Full Name</label>
+                        <input type="text" id="prof-name" placeholder="Full Name">
+                        <label class="form-label" for="prof-phone">Phone Number</label>
+                        <input type="text" id="prof-phone" placeholder="Phone Number">
+                        <label class="form-label" for="prof-street">Street Address</label>
+                        <input type="text" id="prof-street" placeholder="Street Address">
+                        <div class="inline-grid three-up">
+                            <input type="text" id="prof-city"    placeholder="City">
+                            <input type="text" id="prof-state"   placeholder="State">
+                            <input type="text" id="prof-pincode" placeholder="Pincode">
+                        </div>
+                        <label class="form-label" for="prof-dob">Date of Birth</label>
+                        <input type="date" id="prof-dob">
+                        <label class="form-label" for="prof-gender">Gender</label>
+                        <select id="prof-gender">
+                            <option value="">Prefer not to say</option>
+                            <option value="male">Male</option>
+                            <option value="female">Female</option>
+                            <option value="other">Other</option>
+                        </select>
+                        <button onclick="saveProfile()" style="margin-top:0.5rem">Save Profile</button>
+                    </div>
+
+                    <div class="card">
+                        <h3>Food Preferences</h3>
+                        <p class="muted-note">Help us personalize your recommendations.</p>
+                        <label class="form-label" for="prof-diet">Dietary Preference</label>
+                        <select id="prof-diet">
+                            <option value="">No preference</option>
+                            <option value="vegetarian">Vegetarian</option>
+                            <option value="vegan">Vegan</option>
+                            <option value="non_vegetarian">Non-Vegetarian</option>
+                        </select>
+                        <label class="form-label" for="prof-allergies">Allergies</label>
+                        <input type="text" id="prof-allergies" placeholder="e.g. nuts, gluten">
+                        <label class="form-label" for="prof-fav-cuisines">Favourite Cuisines</label>
+                        <input type="text" id="prof-fav-cuisines" placeholder="e.g. Indian, Chinese, Italian">
+                        <label class="form-label" for="prof-spice">Spice Level</label>
+                        <input type="text" id="prof-spice" placeholder="mild / medium / hot">
+                        <label class="form-label" for="prof-default-payment">Default Payment Method</label>
+                        <select id="prof-default-payment">
+                            <option value="UPI">UPI</option>
+                            <option value="wallet">Wallet</option>
+                            <option value="COD">Cash on Delivery</option>
+                            <option value="credit_card">Credit Card</option>
+                            <option value="debit_card">Debit Card</option>
+                        </select>
+                        <button onclick="saveProfile()" style="margin-top:0.5rem">Save Preferences</button>
+                    </div>
+
+                    <div class="card">
+                        <h3>Change Password</h3>
+                        <p class="muted-note">Your current password is required to verify the change.</p>
+                        <label class="form-label" for="pwd-current">Current Password</label>
+                        <input type="password" id="pwd-current" placeholder="Current Password">
+                        <label class="form-label" for="pwd-new">New Password</label>
+                        <input type="password" id="pwd-new" placeholder="New Password">
+                        <button onclick="changePassword()" style="margin-top:0.5rem">Update Password</button>
+                    </div>
                 </div>
             </div>
 
-            <div class="profile-grid">
-                <div class="card">
-                    <h3>Delivery Address</h3>
-                    <input type="text" id="prof-name" placeholder="Full Name">
-                    <input type="text" id="prof-phone" placeholder="Phone Number">
-                    <input type="text" id="prof-street" placeholder="Street Address">
-                    <div class="inline-grid three-up">
-                        <input type="text" id="prof-city" placeholder="City">
-                        <input type="text" id="prof-state" placeholder="State">
-                        <input type="text" id="prof-pincode" placeholder="Pincode">
+            <!-- RESTAURANT OWNER PROFILE -->
+            <div id="profile-owner" class="profile-role-panel hidden">
+                <div class="profile-grid">
+                    <div class="card">
+                        <h3>Owner Details</h3>
+                        <p class="muted-note">Your personal contact information as the registered restaurant owner.</p>
+                        <label class="form-label" for="owner-prof-name">Full Name</label>
+                        <input type="text" id="owner-prof-name" placeholder="Full Name">
+                        <label class="form-label" for="owner-prof-phone">Phone Number</label>
+                        <input type="text" id="owner-prof-phone" placeholder="Phone Number">
+                        <label class="form-label" for="owner-prof-alt-phone">Alternate Phone</label>
+                        <input type="text" id="owner-prof-alt-phone" placeholder="Alternate Phone (optional)">
+                        <label class="form-label" for="owner-prof-street">Business Street Address</label>
+                        <input type="text" id="owner-prof-street" placeholder="Business Street Address">
+                        <div class="inline-grid three-up">
+                            <input type="text" id="owner-prof-city"    placeholder="City">
+                            <input type="text" id="owner-prof-state"   placeholder="State">
+                            <input type="text" id="owner-prof-pincode" placeholder="Pincode">
+                        </div>
+                        <button onclick="saveOwnerProfile()" style="margin-top:0.5rem">Save Details</button>
                     </div>
-                    <button onclick="saveProfile()">Save Profile</button>
-                    <button onclick="routeUserByRole()" class="btn-secondary" id="btn-cancel-profile">Cancel</button>
-                </div>
 
-                <div class="card">
-                    <h3>Change Password</h3>
-                    <input type="password" id="pwd-current" placeholder="Current Password">
-                    <input type="password" id="pwd-new" placeholder="New Password">
-                    <button onclick="changePassword()">Update Password</button>
-                    <p class="muted-note">Password updates use the backend password route and verify your current password first.</p>
+                    <div class="card">
+                        <h3>Business &amp; Tax Info</h3>
+                        <p class="muted-note">Required for billing and compliance. Not shown publicly.</p>
+                        <label class="form-label" for="owner-prof-gstin">GSTIN</label>
+                        <input type="text" id="owner-prof-gstin"   placeholder="27AAPFU0939F1ZV">
+                        <label class="form-label" for="owner-prof-pan">PAN Number</label>
+                        <input type="text" id="owner-prof-pan"     placeholder="PAN Number">
+                        <label class="form-label" for="owner-prof-fssai">FSSAI License Number</label>
+                        <input type="text" id="owner-prof-fssai"   placeholder="FSSAI License Number">
+                        <label class="form-label" for="owner-prof-bank-name">Bank Name</label>
+                        <input type="text" id="owner-prof-bank-name" placeholder="Bank Name">
+                        <label class="form-label" for="owner-prof-account">Account Number</label>
+                        <input type="text" id="owner-prof-account" placeholder="Bank Account Number">
+                        <label class="form-label" for="owner-prof-ifsc">IFSC Code</label>
+                        <input type="text" id="owner-prof-ifsc"    placeholder="IFSC Code">
+                        <button onclick="saveOwnerProfile()" style="margin-top:0.5rem">Save Business Info</button>
+                    </div>
+
+                    <div class="card">
+                        <h3>Change Password</h3>
+                        <p class="muted-note">Your current password is required to verify the change.</p>
+                        <label class="form-label" for="owner-pwd-current">Current Password</label>
+                        <input type="password" id="owner-pwd-current" placeholder="Current Password">
+                        <label class="form-label" for="owner-pwd-new">New Password</label>
+                        <input type="password" id="owner-pwd-new" placeholder="New Password">
+                        <button onclick="changeOwnerPassword()" style="margin-top:0.5rem">Update Password</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- DELIVERY PARTNER PROFILE -->
+            <div id="profile-delivery" class="profile-role-panel hidden">
+                <div class="profile-grid">
+                    <div class="card">
+                        <h3>Personal Details</h3>
+                        <p class="muted-note">Your identity and contact information for delivery assignments.</p>
+                        <label class="form-label" for="del-prof-name">Full Name</label>
+                        <input type="text" id="del-prof-name" placeholder="Full Name">
+                        <label class="form-label" for="del-prof-phone">Phone Number</label>
+                        <input type="text" id="del-prof-phone" placeholder="Phone Number">
+                        <label class="form-label" for="del-prof-alt-phone">Emergency Contact</label>
+                        <input type="text" id="del-prof-alt-phone" placeholder="Emergency Contact Number">
+                        <label class="form-label" for="del-prof-street">Home Street Address</label>
+                        <input type="text" id="del-prof-street" placeholder="Home Street Address">
+                        <div class="inline-grid three-up">
+                            <input type="text" id="del-prof-city"    placeholder="City">
+                            <input type="text" id="del-prof-state"   placeholder="State">
+                            <input type="text" id="del-prof-pincode" placeholder="Pincode">
+                        </div>
+                        <label class="form-label" for="del-prof-dob">Date of Birth</label>
+                        <input type="date" id="del-prof-dob">
+                        <button onclick="saveDeliveryProfile()" style="margin-top:0.5rem">Save Details</button>
+                    </div>
+
+                    <div class="card">
+                        <h3>Vehicle &amp; Availability</h3>
+                        <p class="muted-note">Used for order matching and dispatch. Keep this up to date.</p>
+                        <label class="form-label" for="del-prof-vehicle">Vehicle Type</label>
+                        <select id="del-prof-vehicle">
+                            <option value="bicycle">Bicycle</option>
+                            <option value="motorcycle">Motorcycle</option>
+                            <option value="scooter">Scooter</option>
+                            <option value="car">Car</option>
+                            <option value="electric_scooter">Electric Scooter</option>
+                        </select>
+                        <label class="form-label" for="del-prof-vehicle-number">Vehicle Registration</label>
+                        <input type="text" id="del-prof-vehicle-number" placeholder="TN 01 AB 1234">
+                        <label class="form-label" for="del-prof-license">Driving License</label>
+                        <input type="text" id="del-prof-license" placeholder="Driving License Number">
+                        <label class="form-label" for="del-prof-zone">Preferred Delivery Zone</label>
+                        <input type="text" id="del-prof-zone" placeholder="Area / Zone">
+                        <label class="form-label" for="del-prof-available">Availability Status</label>
+                        <select id="del-prof-available">
+                            <option value="true">Available for Deliveries</option>
+                            <option value="false">Offline / Not Available</option>
+                        </select>
+                        <label class="form-label" for="del-prof-radius">Max Delivery Radius (km)</label>
+                        <input type="number" id="del-prof-radius" placeholder="e.g. 10" min="1" max="50">
+                        <button onclick="saveDeliveryProfile()" style="margin-top:0.5rem">Save Vehicle Info</button>
+                    </div>
+
+                    <div class="card">
+                        <h3>Bank Details</h3>
+                        <p class="muted-note">For weekly earnings payout. Stored securely.</p>
+                        <label class="form-label" for="del-prof-bank-name">Bank Name</label>
+                        <input type="text" id="del-prof-bank-name" placeholder="Bank Name">
+                        <label class="form-label" for="del-prof-account">Account Number</label>
+                        <input type="text" id="del-prof-account" placeholder="Account Number">
+                        <label class="form-label" for="del-prof-ifsc">IFSC Code</label>
+                        <input type="text" id="del-prof-ifsc" placeholder="IFSC Code">
+                        <label class="form-label" for="del-prof-upi">UPI ID</label>
+                        <input type="text" id="del-prof-upi" placeholder="upi@bank (optional)">
+                        <button onclick="saveDeliveryProfile()" style="margin-top:0.5rem">Save Bank Info</button>
+
+                        <h3 style="margin-top:1.5rem">Change Password</h3>
+                        <label class="form-label" for="del-pwd-current">Current Password</label>
+                        <input type="password" id="del-pwd-current" placeholder="Current Password">
+                        <label class="form-label" for="del-pwd-new">New Password</label>
+                        <input type="password" id="del-pwd-new" placeholder="New Password">
+                        <button onclick="changeDeliveryPassword()" style="margin-top:0.5rem">Update Password</button>
+                    </div>
                 </div>
             </div>
         </section>
 
+        <!-- ══ RESTAURANTS SECTION ══ -->
         <section id="restaurants-section" class="view-section">
             <div class="section-head">
                 <div>
@@ -99,13 +458,13 @@
 
             <div class="card filter-card">
                 <div class="filter-grid">
-                    <input type="text" id="restaurant-search" placeholder="Search restaurants, cuisines, or city">
-                    <input type="text" id="restaurant-cuisine" placeholder="Cuisine filter">
-                    <input type="text" id="restaurant-city" placeholder="City filter">
+                    <input type="text" id="restaurant-search"  placeholder="🔍 Search restaurants, cuisines…">
+                    <input type="text" id="restaurant-cuisine" placeholder="Cuisine type">
+                    <input type="text" id="restaurant-city"    placeholder="City">
                     <select id="restaurant-sort">
-                        <option value="">Newest</option>
+                        <option value="">Sort: Newest</option>
                         <option value="rating">Top Rated</option>
-                        <option value="name">Name</option>
+                        <option value="name">Name A–Z</option>
                     </select>
                     <select id="restaurant-open">
                         <option value="">Any Status</option>
@@ -119,6 +478,7 @@
             <div class="grid" id="restaurants-grid"></div>
         </section>
 
+        <!-- ══ MENU SECTION ══ -->
         <section id="menu-section" class="view-section">
             <button onclick="showView('restaurants-section')" class="btn-back">Back to restaurants</button>
 
@@ -132,7 +492,7 @@
 
             <div class="card filter-card">
                 <div class="filter-grid">
-                    <input type="text" id="menu-search" placeholder="Search menu items">
+                    <input type="text" id="menu-search" placeholder="🔍 Search menu items">
                     <select id="menu-category">
                         <option value="">All Categories</option>
                         <option value="appetizer">Appetizer</option>
@@ -156,16 +516,17 @@
 
                 <aside class="cart-sidebar">
                     <div class="cart-head">
-                        <h3>Your Cart</h3>
-                        <button class="ghost-btn" onclick="clearCart()">Clear</button>
+                        <h3>🛒 Your Cart</h3>
+                        <button class="ghost-btn compact-btn" onclick="clearCart()">Clear</button>
                     </div>
                     <div id="cart-items"></div>
 
                     <div class="cart-controls">
-                        <input type="text" id="promo-code" placeholder="Promo code (SAVE10 or FREEDEL)">
-                        <button class="compact-btn" onclick="applyPromoCode()">Apply Promo</button>
+                        <input type="text" id="promo-code" placeholder="Promo code (SAVE10 / FREEDEL)">
+                        <button class="compact-btn" onclick="applyPromoCode()">Apply</button>
                     </div>
 
+                    <label class="form-label" for="payment-method">Payment Method</label>
                     <select id="payment-method">
                         <option value="UPI">UPI</option>
                         <option value="wallet">Wallet</option>
@@ -175,6 +536,7 @@
                         <option value="net_banking">Net Banking</option>
                     </select>
 
+                    <label class="form-label" for="payment-gateway" style="margin-top:0.5rem">Payment Gateway</label>
                     <select id="payment-gateway">
                         <option value="manual">Manual</option>
                         <option value="razorpay">Razorpay</option>
@@ -183,27 +545,30 @@
                         <option value="gpay">GPay</option>
                     </select>
 
-                    <textarea id="order-note" rows="3" placeholder="Overall order note"></textarea>
+                    <label class="form-label" for="order-note" style="margin-top:0.5rem">Order Note</label>
+                    <textarea id="order-note" rows="2" placeholder="Special instructions…"></textarea>
 
                     <div class="price-breakdown" id="cart-breakdown"></div>
-                    <button onclick="processCheckout()" id="checkout-btn" disabled>Place Order</button>
+                    <button onclick="processCheckout()" id="checkout-btn">Place Order →</button>
                 </aside>
             </div>
         </section>
 
+        <!-- ══ MY ORDERS SECTION ══ -->
         <section id="my-orders-section" class="view-section">
             <div class="section-head">
                 <div>
-                    <span class="eyebrow">Orders</span>
+                    <span class="eyebrow">History</span>
                     <h2>My Orders</h2>
                 </div>
-                <button class="btn-secondary compact-btn" onclick="loadRestaurants()">Back to Home</button>
+                <button class="btn-secondary compact-btn" onclick="loadRestaurants()">← Back to Home</button>
             </div>
 
             <div id="order-stats" class="stats-strip"></div>
             <div id="my-orders-container" class="grid"></div>
         </section>
 
+        <!-- ══ OWNER SECTION ══ -->
         <section id="owner-section" class="view-section">
             <div class="section-head">
                 <div>
@@ -213,10 +578,17 @@
             </div>
 
             <div id="owner-overview" class="stats-strip"></div>
+
+            <div class="reviews-section">
+                <h3>Customer Reviews</h3>
+                <div id="reviews-list" class="reviews-list"></div>
+            </div>
+
             <div id="owner-restaurants-panel"></div>
             <div id="owner-orders-container" class="card"></div>
         </section>
 
+        <!-- ══ DELIVERY SECTION ══ -->
         <section id="delivery-section" class="view-section">
             <div class="section-head">
                 <div>
@@ -229,31 +601,52 @@
             <div id="delivery-orders-container"></div>
         </section>
 
+        <!-- ══ SUCCESS SECTION ══ -->
         <section id="success-section" class="view-section">
             <div class="card form-card text-center">
-                <h2>Order placed</h2>
+                <div style="font-size:3.5rem;margin-bottom:0.75rem">🎉</div>
+                <h2>Order Placed!</h2>
                 <p id="success-message">Your payment has been processed and the order is now in the queue.</p>
                 <button onclick="loadMyOrders()">Track Order</button>
                 <button onclick="loadRestaurants()" class="btn-secondary">Continue Ordering</button>
             </div>
         </section>
+
     </main>
 
+    <!-- ══ REVIEW MODAL ══ -->
     <div id="review-modal" class="modal hidden">
         <div class="modal-content card">
             <div class="modal-head">
-                <h3 id="review-modal-title">Leave a Review</h3>
-                <button class="ghost-btn" onclick="closeReviewModal()">Close</button>
+                <h3 id="review-modal-title">⭐ Leave a Review</h3>
+                <button class="ghost-btn compact-btn" onclick="closeReviewModal()">✕ Close</button>
             </div>
             <input type="hidden" id="review-id">
             <input type="hidden" id="review-order-id">
             <input type="hidden" id="review-restaurant-id">
-            <label class="form-label" for="review-rating">Rating</label>
+            <label class="form-label" for="review-rating">Rating (1–5)</label>
             <input type="number" id="review-rating" min="1" max="5" value="5">
-            <label class="form-label" for="review-comment">Comment</label>
-            <textarea id="review-comment" rows="4" placeholder="Share your experience"></textarea>
-            <button onclick="submitReview()">Submit Review</button>
-            <button id="review-delete-btn" class="btn-danger hidden" onclick="deleteReview()">Delete Review</button>
+            <label class="form-label" for="review-comment">Your Comment</label>
+            <textarea id="review-comment" rows="4" placeholder="Share your experience with this restaurant…"></textarea>
+            <div class="button-row" style="margin-top:0.5rem">
+                <button onclick="submitReview()" style="flex:1">Submit Review</button>
+                <button id="review-delete-btn" class="btn-danger hidden" onclick="deleteReview()" style="flex:1">Delete Review</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast notification container -->
+    <div id="toast-container" aria-live="polite" aria-atomic="false"></div>
+
+    <!-- Custom prompt / confirm modal -->
+    <div id="prompt-modal-overlay" class="hidden" role="dialog" aria-modal="true" aria-labelledby="prompt-modal-title">
+        <div id="prompt-modal">
+            <h3 id="prompt-modal-title">Confirm</h3>
+            <div id="prompt-modal-body"></div>
+            <div id="prompt-modal-actions">
+                <button id="prompt-modal-cancel" class="compact-btn ghost-btn">Cancel</button>
+                <button id="prompt-modal-confirm" class="compact-btn">Confirm</button>
+            </div>
         </div>
     </div>
 

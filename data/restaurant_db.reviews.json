@@ -1,0 +1,152 @@
+[{
+  "_id": "rev1",
+  "user_id": "u1",
+  "restaurant_id": "res1",
+  "order_id": "o1",
+  "rating": 5
+},
+{
+  "_id": "rev2",
+  "user_id": "u2",
+  "restaurant_id": "res2",
+  "order_id": "o2",
+  "rating": 4
+},
+{
+  "_id": "rev3",
+  "user_id": "u3",
+  "restaurant_id": "res3",
+  "order_id": "o3",
+  "rating": 3
+},
+{
+  "_id": "rev4",
+  "user_id": "u4",
+  "restaurant_id": "res4",
+  "order_id": "o4",
+  "rating": 5
+},
+{
+  "_id": "rev5",
+  "user_id": "u5",
+  "restaurant_id": "res5",
+  "order_id": "o5",
+  "rating": 4
+},
+{
+  "_id": "rev6",
+  "user_id": "u1",
+  "restaurant_id": "res2",
+  "order_id": "o6",
+  "rating": 5
+},
+{
+  "_id": "rev7",
+  "user_id": "u2",
+  "restaurant_id": "res3",
+  "order_id": "o7",
+  "rating": 4
+},
+{
+  "_id": "rev8",
+  "user_id": "u3",
+  "restaurant_id": "res4",
+  "order_id": "o8",
+  "rating": 5
+},
+{
+  "_id": "rev9",
+  "user_id": "u4",
+  "restaurant_id": "res5",
+  "order_id": "o9",
+  "rating": 3
+},
+{
+  "_id": "rev10",
+  "user_id": "u5",
+  "restaurant_id": "res1",
+  "order_id": "o10",
+  "rating": 5
+},
+{
+  "_id": {
+    "$oid": "69df524c3693ff1631a153d1"
+  },
+  "user_id": {
+    "$oid": "69df3bdd3b9fd922b0c65e81"
+  },
+  "restaurant_id": {
+    "$oid": "69df3f8d3b9fd922b0c65e87"
+  },
+  "order_id": {
+    "$oid": "69df517330c4a16d01f0e5d2"
+  },
+  "rating": 5,
+  "comment": "maja hi agaya!",
+  "is_verified": true,
+  "created_at": {
+    "$date": "2026-04-15T08:54:36.039Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "69df5ce07ef5430169a602d5"
+  },
+  "user_id": {
+    "$oid": "69df3bdd3b9fd922b0c65e81"
+  },
+  "restaurant_id": {
+    "$oid": "69df3f8d3b9fd922b0c65e87"
+  },
+  "order_id": {
+    "$oid": "69df513030c4a16d01f0e5bb"
+  },
+  "rating": 5,
+  "comment": "Very good!",
+  "is_verified": true,
+  "created_at": {
+    "$date": "2026-04-15T09:39:44.039Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "69df5f0d3b9fd922b0c65e94"
+  },
+  "restaurant_id": {
+    "$oid": "69df3f8d3b9fd922b0c65e87"
+  },
+  "user_id": {
+    "$oid": "69df5f0d3b9fd922b0c65e92"
+  },
+  "order_id": {
+    "$oid": "69df5f0d3b9fd922b0c65e93"
+  },
+  "rating": 5,
+  "comment": "Amazing food!",
+  "created_at": {
+    "$date": "2026-04-15T09:49:01.783Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "69df653d0032842284e26cbe"
+  },
+  "user_id": {
+    "$oid": "69df3bdd3b9fd922b0c65e81"
+  },
+  "restaurant_id": {
+    "$oid": "69df3f8d3b9fd922b0c65e87"
+  },
+  "order_id": {
+    "$oid": "69df64e4896cd53f5c60d2df"
+  },
+  "rating": 3,
+  "comment": "Could have been better",
+  "is_verified": true,
+  "created_at": {
+    "$date": "2026-04-15T10:15:25.685Z"
+  },
+  "__v": 0
+}]

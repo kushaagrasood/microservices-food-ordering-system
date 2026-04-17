@@ -1,0 +1,75 @@
+[{
+  "_id": {
+    "$oid": "69df3bdd3b9fd922b0c65e81"
+  },
+  "email": "user1@mail.com",
+  "password_hash": "$2b$10$YZYCZiMmQctVBxEPVvJsMOUGIqDKQe7FRzr6CUVQP//VBNi/r8jN.",
+  "full_name": "Siddhartha",
+  "role_id": {
+    "$oid": "69df3bcf3b9fd922b0c65e7e"
+  },
+  "created_at": {
+    "$date": "2026-04-15T07:18:53.318Z"
+  },
+  "is_active": true,
+  "last_login": {
+    "$date": "2026-04-15T10:50:12.191Z"
+  },
+  "address": {
+    "street": "Chikki Lane",
+    "city": "Chennai",
+    "state": "Tamil Nadu",
+    "pincode": "370201"
+  },
+  "phone": "6942665795"
+},
+{
+  "_id": {
+    "$oid": "69df3bdd3b9fd922b0c65e82"
+  },
+  "email": "owner1@mail.com",
+  "password_hash": "$2b$10$5vnr/fSFL8whQRrM0CCGlu19H52/XnHaZi6PT5L4jCrFzQnrAwmPC",
+  "full_name": "Owner One",
+  "role_id": {
+    "$oid": "69df3bcf3b9fd922b0c65e7f"
+  },
+  "created_at": {
+    "$date": "2026-04-15T07:18:53.318Z"
+  },
+  "is_active": true,
+  "last_login": {
+    "$date": "2026-04-15T10:24:48.095Z"
+  },
+  "address": {
+    "street": "Tambaram",
+    "city": "Chennai",
+    "state": "Tamil Nadu",
+    "pincode": "370205"
+  },
+  "phone": "6519851315"
+},
+{
+  "_id": {
+    "$oid": "69df3bdd3b9fd922b0c65e83"
+  },
+  "email": "delivery1@mail.com",
+  "password_hash": "$2b$10$PQFQPEG6ASvUtAOgGKS12.04gcHNDvf2z5Fih5TBcccmL1QQW6Q0K",
+  "full_name": "Delivery One",
+  "role_id": {
+    "$oid": "69df3bcf3b9fd922b0c65e80"
+  },
+  "created_at": {
+    "$date": "2026-04-15T07:18:53.318Z"
+  },
+  "is_active": true,
+  "last_login": {
+    "$date": "2026-04-15T10:14:50.999Z"
+  },
+  "address": {
+    "street": "Radhanpur",
+    "city": "Chennai",
+    "state": "Tamil Nadu",
+    "pincode": "378950"
+  },
+  "phone": "6984456326"
+}]

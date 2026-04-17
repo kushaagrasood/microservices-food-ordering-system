@@ -509,6 +509,55 @@ app.delete("/reviews/:id", async (req, res) => {
     }
 });
 
+app.get("/reviews/restaurant/:id", async (req, res) => {
+    try {
+        const reviews = await Review.find({
+            restaurant_id: new mongoose.Types.ObjectId(req.params.id)
+        }).sort({ created_at: -1 });
+
+        res.json({
+            success: true,
+            data: reviews
+        });
+
+    } catch (err) {
+        res.status(500).json({
+            success: false,
+            error: err.message
+        });
+    }
+});
+
+app.patch("/menus/:id/toggle", async (req, res) => {
+    try {
+        const menu = await Menu.findById(req.params.id);
+
+        if (!menu) {
+            return res.status(404).json({
+                success: false,
+                error: "Menu not found"
+            });
+        }
+
+        // 🔥 Toggle logic
+        menu.is_available = !menu.is_available;
+
+        await menu.save();
+
+        res.json({
+            success: true,
+            message: "Menu availability toggled",
+            data: menu
+        });
+
+    } catch (err) {
+        res.status(500).json({
+            success: false,
+            error: err.message
+        });
+    }
+});
+
 // ========== STATISTICS ==========
 
 // Get restaurant statistics
